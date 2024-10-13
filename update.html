@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Quiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, rgba(255,0,0,0.3), rgba(0,255,0,0.3), rgba(0,0,255,0.3));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 700px;
+            margin: 20px;
+            position: relative;
+        }
+        .form, .instructions, .quiz, .result {
+            text-align: center;
+        }
+        input[type="text"], select, button {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+        button {
+            border: none;
+            cursor: pointer;
+            color: white;
+            font-weight: bold;
+        }
+        button:hover {
+            opacity: 0.8;
+        }
+        .btn-start {
+            background-color: #4CAF50;
+        }
+        .btn-start:hover {
+            background-color: #45a049;
+        }
+        .btn-next {
+            background-color: #FF5722;
+        }
+        .btn-next:hover {
+            background-color: #e64a19;
+        }
+        .btn-back {
+            background-color: #2196F3;
+        }
+        .btn-back:hover {
+            background-color: #1976d2;
+        }
+        .btn-submit {
+            background-color: #4CAF50;
+        }
+        .btn-submit:hover {
+            background-color: #45a049;
+        }
+        .marks {
+            font-size: 36px;
+            font-weight: bold;
+            color: #ff0000;
+        }
+        .question {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .options {
+            text-align: left;
+            font-size: 20px;
+        }
+        .option {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .option input[type="radio"] {
+            width: 30px;
+            height: 30px;
+            margin-right: 10px;
+            accent-color: #4CAF50;
+        }
+        .option label {
+            font-size: 20px;
+            margin-left: 5px;
+        }
+        .warning {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 0, 0, 0.7);
+            color: #fff;
+            font-size: 24px;
+            text-align: center;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .warning p {
+            margin: 0;
+            padding: 20px;
+        }
+        .checkbox-label {
+            font-size: 18px;
+            margin-top: 10px;
+        }
+        .language-select {
+            margin-bottom: 20px;
+        }
+        .result-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        .result-info div {
+            flex: 1;
+            text-align: left;
+        }
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .result-table th, .result-table td {
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+        .result-table th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .result-table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .result-table tr:hover {
+            background-color: #ddd;
+        }
+        .btn-send-results {
+            background-color: #008CBA;
+        }
+        .btn-send-results:hover {
+            background-color: #007bb5;
+        }
+        .instructions-table {
+            margin: 20px auto;
+            text-align: left;
+            width: 80%;
+        }
+        .instructions-table th, .instructions-table td {
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+        .instructions-table th {
+            background-color: #f2f2f2;
+            text-align: center;
+        }
+        .result-section {
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Student Information Page -->
+        <div class="form" id="studentForm">
+            <h2>Student Information</h2>
+            <form id="infoForm" onsubmit="showInstructions(event)">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required><br><br>
+                <label for="roll">Roll Number:</label>
+                <input type="text" id="roll" name="roll" required><br><br>
+                <label for="mobile">Mobile Number:</label>
+                <input type="text" id="mobile" name="mobile" required><br><br>
+                <label for="module">Module:</label>
+                <input type="text" id="module" name="module" required><br><br>
+                <label for="date">Date:</label>
+                <input type="text" id="date" name="date" readonly><br><br>
+                <label for="time">Time:</label>
+                <input type="text" id="time" name="time" readonly><br><br>
+                <button type="submit" class="btn-start">Continue</button>
+            </form>
+        </div>
+
+        <!-- Exam Instructions Page -->
+        <div class="instructions" id="instructionsPage" style="display: none;">
+            <h2>Exam Instructions</h2>
+            <div class="language-select">
+                <label for="language">Select Language:</label>
+                <select id="language" onchange="changeLanguage(event)">
+                    <option value="en">English</option>
+                    <option value="hi">Hindi</option>
+                </select>
+            </div>
+            <table class="instructions-table">
+                <thead>
+                    <tr>
+                        <th colspan="2">Instructions</th>
+                    </tr>
+                </thead>
+                <tbody id="instructionsContent">
+                    <tr>
+                        <td>1</td>
+                        <td>Each question is worth 1 mark.</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>Do not copy questions, minimize the tab, or reload the tab.</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>Do not cheat.</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>If there is any problem, contact the teacher.</td>
+                    </tr>
+                </tbody>
+            </table>
+            <label class="checkbox-label">
+                <input type="checkbox" id="instructionsCheckbox" onclick="toggleStartQuizButton()"> I have read all instructions
+            </label><br><br>
+            <button id="startQuizButton" class="btn-start" onclick="startQuizFromInstructions()" disabled>Start Quiz</button>
+        </div>
+
+        <!-- Quiz Page -->
+        <div class="quiz" id="quizForm" style="display: none;">
+            <h2>Quiz</h2>
+            <div class="language-select">
+                <label for="quizLanguage">Select Language:</label>
+                <select id="quizLanguage" onchange="showQuestion()">
+                    <option value="en">English</option>
+                    <option value="hi">Hindi</option>
+                </select>
+            </div>
+            <div id="questionContainer"></div>
+            <button onclick="prevQuestion()" id="prevButton" style="display: none;" class="btn-back">Back</button>
+            <button onclick="nextQuestion()" id="nextButton" class="btn-next">Next</button>
+            <button onclick="submitQuiz()" id="submitButton" style="display: none;" class="btn-submit">Submit</button>
+        </div>
+
+        <!-- Result Page -->
+        <div class="result" id="resultPage" style="display: none;">
+            <h2>Quiz Result</h2>
+            <div class="language-select">
+                <label for="resultLanguage">Select Language:</label>
+                <select id="resultLanguage" onchange="displayResults()">
+                    <option value="en">English</option>
+                    <option value="hi">Hindi</option>
+                </select>
+            </div>
+            <div class="result-info">
+                <div>Name: <span id="resultName"></span></div>
+                <div>Roll Number: <span id="resultRoll"></span></div>
+                <div>Module: <span id="resultModule"></span></div>
+                <div>Date: <span id="resultDate"></span></div>
+                <div>Time: <span id="resultTime"></span></div>
+            </div>
+            <div class="result-section">
+                <h3>Total Marks Obtained: <span id="marks" class="marks"></span></h3>
+            </div>
+            <div class="result-section">
+                <h3>Quiz Details:</h3>
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>Question</th>
+                            <th>Selected Answer</th>
+                            <th>Correct Answer</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsTableBody"></tbody>
+                </table>
+            </div>
+            <button class="btn-send-results" onclick="sendResults()">Send Results</button>
+        </div>
+
+        <!-- Result Sending Form -->
+        <form id="resultForm" action="https://api.web3forms.com/submit" method="POST" style="display:none;">
+            <input type="hidden" name="access_key" value="6b3a710f-dfb2-45de-8638-eede1b94f108">
+            <input type="hidden" name="name" id="formName">
+            <input type="hidden" name="roll" id="formRoll">
+            <input type="hidden" name="mobile" id="formMobile">
+            <input type="hidden" name="module" id="formModule">
+            <input type="hidden" name="date" id="formDate">
+            <input type="hidden" name="time" id="formTime">
+            <input type="hidden" name="marks" id="formMarks">
+            <textarea name="quiz_details" id="formQuizDetails" style="display:none;"></textarea>
+        </form>
+
+    </div>
+
+    <!-- Warning Page -->
+    <div class="warning" id="warningPage">
+        <p id="warningMessage"></p>
+    </div>
+
+    <script>
+        // Global Variables
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let studentAnswers = [];
+        const quizQuestions = [
+		 {
+            question_en: "What is the sequence in which a computer operates?",
+            options_en: ["Input, output, process", "Input, process, output", "Process, input, output", "Output, process, input"],
+            question_hi: "कंप्यूटर किस क्रम में काम करता है?",
+            options_hi: ["इनपुट, आउटपुट, प्रोसेस", "इनपुट, प्रोसेस, आउटपुट", "प्रोसेस, इनपुट, आउटपुट", "आउटपुट, प्रोसेस, इनपुट"],
+            correctAnswer: 1
+        },
+        {
+            question_en: "Which is the first general-purpose programmable electronic computer?",
+            options_en: ["ENIAC", "EDVAC", "EDSAC", "UNIVAC"],
+            question_hi: "पहला सामान्य प्रयोजन वाला प्रोग्रामेबल इलेक्ट्रॉनिक कंप्यूटर कौन सा है?",
+            options_hi: ["ENIAC", "EDVAC", "EDSAC", "UNIVAC"],
+            correctAnswer: 0
+        },
+        {
+            question_en: "What type of device is a computer?",
+            options_en: ["Electrical device", "Electronic device", "Electro magnetic", "Electro mechanical"],
+            question_hi: "कंप्यूटर किस प्रकार का उपकरण है?",
+            options_hi: ["इलेक्ट्रिकल डिवाइस", "इलेक्ट्रॉनिक डिवाइस", "इलेक्ट्रो मैग्नेटिक", "इलेक्ट्रो मैकेनिकल"],
+            correctAnswer: 1
+        },
+        {
+            question_en: "Who is considered as the father of computer?",
+            options_en: ["Charles Babbage", "John Lickert", "John Mauchly", "M.V Wilkes"],
+            question_hi: "कंप्यूटर के जनक के रूप में किसे माना जाता है?",
+            options_hi: ["चार्ल्स बैबेज", "जॉन लिकर्ट", "जॉन मॉकली", "एम.वी. विल्क्स"],
+            correctAnswer: 0
+        },
+        {
+            question_en: "Who invented the Analytical engine?",
+            options_en: ["Charles Babbage", "John Lickert", "John Mauchly", "M.V Wilkes"],
+            question_hi: "एनालिटिकल इंजन का आविष्कार किसने किया?",
+            options_hi: ["चार्ल्स बैबेज", "जॉन लिकर्ट", "जॉन मॉकली", "एम.वी. विल्क्स"],
+            correctAnswer: 0
+        },
+        {
+            question_en: "What is the main electronic component of the first-generation computer?",
+            options_en: ["Integrated circuit", "Microprocessor", "Transistors", "Vacuum tubes"],
+            question_hi: "पहली पीढ़ी के कंप्यूटर का मुख्य इलेक्ट्रॉनिक घटक क्या है?",
+            options_hi: ["इंटीग्रेटेड सर्किट", "माइक्रोप्रोसेसर", "ट्रांजिस्टर", "वैक्यूम ट्यूब"],
+            correctAnswer: 3
+        },
+        {
+            question_en: "How does the parallel port transfer a byte?",
+            options_en: ["Bit by bit", "2 bits at a time", "4 bits at a time", "8 bits at a time"],
+            question_hi: "पैरलल पोर्ट बाइट को कैसे ट्रांसफर करता है?",
+            options_hi: ["बिट बाय बिट", "2 बिट्स एक साथ", "4 बिट्स एक साथ", "8 बिट्स एक साथ"],
+            correctAnswer: 3
+        },
+        {
+            question_en: "Which is an internal power supply unit of the CPU?",
+            options_en: ["CVT", "UPS", "SMPS", "Stabilizer"],
+            question_hi: "सीपीयू की आंतरिक पावर सप्लाई यूनिट कौन सी है?",
+            options_hi: ["सीवीटी", "यूपीएस", "एसएमपीएस", "स्टेबलाइज़र"],
+            correctAnswer: 2
+        },
+        {
+            question_en: "What is the purpose of the expansion slot in the motherboard?",
+            options_en: ["To insert the RAM", "To insert the mouse", "To insert the keyboard", "To insert the additional peripherals"],
+            question_hi: "मदरबोर्ड में विस्तार स्लॉट का क्या उद्देश्य है?",
+            options_hi: ["रैम डालने के लिए", "माउस डालने के लिए", "कीबोर्ड डालने के लिए", "अतिरिक्त परिधीय उपकरण डालने के लिए"],
+            correctAnswer: 3
+        },
+        {
+            question_en: "What is the purpose of the memory unit in a computer?",
+            options_en: ["Accepts data", "Displays data", "Process data", "Stores data"],
+            question_hi: "कंप्यूटर में मेमोरी यूनिट का क्या उद्देश्य है?",
+            options_hi: ["डेटा स्वीकार करता है", "डेटा प्रदर्शित करता है", "डेटा प्रोसेस करता है", "डेटा संग्रहीत करता है"],
+            correctAnswer: 3
+        },
+        {
+            question_en: "How many pins are there in SDR DIMM?",
+            options_en: ["138", "148", "158", "168"],
+            question_hi: "एसडीआर डिम में कितने पिन होते हैं?",
+            options_hi: ["138", "148", "158", "168"],
+            correctAnswer: 3
+        },
+        {
+            question_en: "How many pins are there in SIMMs?",
+            options_en: ["30-72", "42-82", "52-92", "62-102"],
+            question_hi: "सिम्स में कितने पिन होते हैं?",
+            options_hi: ["30-72", "42-82", "52-92", "62-102"],
+            correctAnswer: 0
+        }
+    ];
+	 // Utility Functions
+        function setDateTime() {
+            const now = new Date();
+            const date = now.toLocaleDateString();
+            const time = now.toLocaleTimeString();
+            document.getElementById('date').value = date;
+            document.getElementById('time').value = time;
+        }
+
+        // Form Handling
+        function showInstructions(event) {
+            event.preventDefault();
+            const form = document.getElementById('studentForm');
+            form.style.display = 'none';
+            document.getElementById('instructionsPage').style.display = 'block';
+        }
+
+        // Language Handling
+        function changeLanguage(event) {
+            const language = event.target.value;
+            const instructionsContent = document.getElementById('instructionsContent');
+            if (language === 'hi') {
+                instructionsContent.innerHTML = `
+                    <tr><td>1</td><td>प्रत्येक प्रश्न का 1 अंक है।</td></tr>
+                    <tr><td>2</td><td>प्रश्नों को कॉपी न करें, टैब को न्यूनतम करें या टैब को पुनः लोड न करें।</td></tr>
+                    <tr><td>3</td><td>कृपया धोखा न दें।</td></tr>
+                    <tr><td>4</td><td>कोई भी समस्या होने पर शिक्षक से संपर्क करें।</td></tr>
+                `;
+            } else {
+                instructionsContent.innerHTML = `
+                    <tr><td>1</td><td>Each question is worth 1 mark.</td></tr>
+                    <tr><td>2</td><td>Do not copy questions, minimize the tab, or reload the tab.</td></tr>
+                    <tr><td>3</td><td>Do not cheat.</td></tr>
+                    <tr><td>4</td><td>If there is any problem, contact the teacher.</td></tr>
+                `;
+            }
+        }
+
+        function toggleStartQuizButton() {
+            const checkbox = document.getElementById('instructionsCheckbox');
+            document.getElementById('startQuizButton').disabled = !checkbox.checked;
+        }
+
+        // Quiz Handling
+        function startQuizFromInstructions() {
+            document.getElementById('instructionsPage').style.display = 'none';
+            document.getElementById('quizForm').style.display = 'block';
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const language = document.getElementById('quizLanguage').value;
+            const questionContainer = document.getElementById('questionContainer');
+            const questionData = quizQuestions[currentQuestionIndex];
+            questionContainer.innerHTML = `
+                <div class="question">${questionData[`question_${language}`]}</div>
+                <div class="options">
+                    ${questionData[`options_${language}`].map((option, index) => `
+                        <div class="option">
+                            <input type="radio" name="option" id="option${index}" value="${index}" ${studentAnswers[currentQuestionIndex] === index ? 'checked' : ''}>
+                            <label for="option${index}">${option}</label>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            updateNavigationButtons();
+        }
+
+        function nextQuestion() {
+            saveAnswer();
+            if (currentQuestionIndex < quizQuestions.length - 1) {
+                currentQuestionIndex++;
+                showQuestion();
+            }
+        }
+
+        function prevQuestion() {
+            saveAnswer();
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                showQuestion();
+            }
+        }
+
+        function saveAnswer() {
+            const selectedOption = document.querySelector('input[name="option"]:checked');
+            if (selectedOption) {
+                studentAnswers[currentQuestionIndex] = parseInt(selectedOption.value);
+            }
+        }
+
+        function updateNavigationButtons() {
+            document.getElementById('prevButton').style.display = currentQuestionIndex > 0 ? 'block' : 'none';
+            document.getElementById('nextButton').style.display = currentQuestionIndex < quizQuestions.length - 1 ? 'block' : 'none';
+            document.getElementById('submitButton').style.display = currentQuestionIndex === quizQuestions.length - 1 ? 'block' : 'none';
+        }
+
+        function submitQuiz() {
+            saveAnswer();
+            calculateScore();
+            document.getElementById('quizForm').style.display = 'none';
+            document.getElementById('resultPage').style.display = 'block';
+            displayResults();
+        }
+
+        function calculateScore() {
+            score = studentAnswers.reduce((acc, answer, index) => {
+                return acc + (answer === quizQuestions[index].correctAnswer ? 1 : 0);
+            }, 0);
+        }
+
+        // Result Handling
+        function displayResults() {
+            const language = document.getElementById('resultLanguage').value;
+            document.getElementById('resultName').textContent = document.getElementById('name').value;
+            document.getElementById('resultRoll').textContent = document.getElementById('roll').value;
+            document.getElementById('resultModule').textContent = document.getElementById('module').value;
+            document.getElementById('resultDate').textContent = document.getElementById('date').value;
+            document.getElementById('resultTime').textContent = document.getElementById('time').value;
+            document.getElementById('marks').textContent = `${score} / ${quizQuestions.length}`;
+            
+            const resultsTableBody = document.getElementById('resultsTableBody');
+            resultsTableBody.innerHTML = quizQuestions.map((question, index) => `
+                <tr>
+                    <td>${question[`question_${language}`]}</td>
+                    <td>${question[`options_${language}`][studentAnswers[index]] || 'No answer'}</td>
+                    <td>${question[`options_${language}`][question.correctAnswer]}</td>
+                </tr>
+            `).join('');
+
+            prepareResultForSending();
+        }
+
+        function prepareResultForSending() {
+            // Prepare the data for API submission
+            document.getElementById('formName').value = document.getElementById('name').value;
+            document.getElementById('formRoll').value = document.getElementById('roll').value;
+            document.getElementById('formMobile').value = document.getElementById('mobile').value;
+            document.getElementById('formModule').value = document.getElementById('module').value;
+            document.getElementById('formDate').value = document.getElementById('date').value;
+            document.getElementById('formTime').value = document.getElementById('time').value;
+            document.getElementById('formMarks').value = `${score} / ${quizQuestions.length}`;
+            
+            const language = document.getElementById('resultLanguage').value;
+            
+            document.getElementById('formQuizDetails').value = quizDetails;
+        }
+
+        function sendResults() {
+            // Submit the form to the API
+            document.getElementById('resultForm').submit();
+        }
+
+        // Warning System
+        let warnTimeout;
+        function showWarning(message) {
+            clearTimeout(warnTimeout);
+            const warningPage = document.getElementById('warningPage');
+            warningPage.style.display = 'flex';
+            document.getElementById('warningMessage').textContent = message;
+            warnTimeout = setTimeout(() => {
+                warningPage.style.display = 'none';
+            }, 3000);
+        }
+
+        // Initialize Date and Time
+        setDateTime();
+    </script>
+</body>
+</html>
